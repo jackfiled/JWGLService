@@ -1,0 +1,7 @@
+# Visual Stduio Configuration Files
+.vs/
+
+# The Binrary Files
+bin/
+obj/
+
