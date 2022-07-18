@@ -1,6 +1,10 @@
+using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+
+using PostCalendarAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +27,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
         };
     });
+
+// Add the database
+builder.Services.AddDbContext<DatabaseContext>(options =>
+{
+    string databaseName = builder.Configuration["Sqlite:Location"];
+    string databasePath = Path.Join(Directory.GetCurrentDirectory(), databaseName);
+
+    /*// 判断数据库文件是否存在
+    if(!File.Exists(databasePath))
+    {
+        var stream = File.Create(databasePath);
+        stream.Dispose();
+    }*/
+
+    options.UseSqlite($"Data Source={databasePath}");
+});
 
 var app = builder.Build();
 
