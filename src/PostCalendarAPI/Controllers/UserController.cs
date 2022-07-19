@@ -31,7 +31,7 @@ namespace PostCalendarAPI.Controllers
         [Authorize]
         public ActionResult GetUserInfo(int studentID)
         {
-            var user = _context.Users.SingleOrDefault(u => u.StudentId == studentID);
+            var user = _context.Users.SingleOrDefault(u => u.StudentID == studentID);
 
             if(user == default)
             {
@@ -50,7 +50,7 @@ namespace PostCalendarAPI.Controllers
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("student ${user.StudentId} created", user.StudentId);
+            _logger.LogInformation("student ${user.StudentId} created", user.StudentID);
 
             return CreatedAtAction(
                 nameof(CreateUser),
@@ -76,6 +76,42 @@ namespace PostCalendarAPI.Controllers
 
                 _logger.LogInformation("Succeed in deleting {id}", id);
                 return NoContent();
+            }
+        }
+
+        [HttpGet("admin")]
+        public ActionResult Admin(string userName, int studentID)
+        {
+            // 把管理员账号和密码写死在代码里有点愚蠢
+            if(userName == "admin" && studentID == 123456)
+            {
+                var claims = new[]
+                {
+                    // 签发者
+                    new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
+                    // 唯一标识
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    // 签发时间
+                    new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToString()),
+                    // 学号
+                    new Claim("StudentID", studentID.ToString()),
+                };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["Jwt:Issuer"],
+                    audience: _configuration["Jwt:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(30),
+                    signingCredentials: signIn
+                    );
+
+                return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+            }
+            else
+            {
+                return BadRequest();
             }
         }
 
@@ -115,12 +151,12 @@ namespace PostCalendarAPI.Controllers
             }
         }
 
-        private bool CheckUserExist(string userName, int studentId)
+        private bool CheckUserExist(string userName, int studentID)
         {
             try
             {
                 var user = _context.Users.SingleOrDefault(
-                    u => u.UserName == userName && u.StudentId == studentId);
+                    u => u.UserName == userName && u.StudentID == studentID);
 
                 if(user == default)
                 {

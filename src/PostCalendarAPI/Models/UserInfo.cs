@@ -16,7 +16,7 @@
         /// <summary>
         /// 用户的学号
         /// </summary>
-        public int StudentId { get; set; }
+        public int StudentID { get; set; }
         /// <summary>
         /// 用户的班号
         /// </summary>
