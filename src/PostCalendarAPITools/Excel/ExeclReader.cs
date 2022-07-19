@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Excel = Microsoft.Office.Interop.Excel;
-
-namespace PostCalendarAPITools.Excel
+﻿namespace PostCalendarAPITools.Excel
 {
     public class ExcelReader
     {
@@ -48,7 +41,7 @@ namespace PostCalendarAPITools.Excel
                 int studentID = int.Parse(row[1]);
                 // 第三列是名字，不做转换
 
-                items.Add(new ExcelModel(row[2], classNumber, studentID));
+                items.Add(new ExcelModel(row[2], studentID, classNumber));
             }
 
             workbooks.Close();

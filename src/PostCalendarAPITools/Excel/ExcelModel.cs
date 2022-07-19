@@ -8,20 +8,20 @@ namespace PostCalendarAPITools.Excel
 {
     public class ExcelModel
     {
-        public string Name { get; set; }
+        public string UserName { get; set; }
         public int StudentID { get; set; }
         public int ClassNumber { get; set; }
 
         public ExcelModel(string name, int studentID, int classNumber)
         {
-            Name = name;
+            UserName = name;
             StudentID = studentID;
             ClassNumber = classNumber;
         }
 
         public override String ToString()
         {
-            return Name + "-" + StudentID.ToString() + "-" + ClassNumber.ToString();
+            return UserName + "-" + StudentID.ToString() + "-" + ClassNumber.ToString();
         }
     }
 }
