@@ -46,8 +46,6 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
-
 // 先认证
 app.UseAuthentication();
 // 再授权
