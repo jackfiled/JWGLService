@@ -18,6 +18,19 @@ namespace PostCalendarAPI.Services.JWService.Models
             encoded = EncodeInput(studentID) + "%%%" + EncodeInput(password);
         }
 
+        public IEnumerable<KeyValuePair<string, string>> keyValuePairs
+        {
+            get
+            {
+                return new List<KeyValuePair<string, string>>()
+                {
+                    new KeyValuePair<string, string>("userAccount", userAccount),
+                    new KeyValuePair<string, string>("userPassword", userPassword),
+                    new KeyValuePair<string, string>("encoded", encoded),
+                };
+            }
+        }
+
         /// <summary>
         /// Base64加密
         /// </summary>
@@ -26,9 +39,7 @@ namespace PostCalendarAPI.Services.JWService.Models
         private static string EncodeInput(string input)
         {
             Span<byte> bytes = Encoding.UTF8.GetBytes(input);
-            Base64.EncodeToUtf8InPlace(bytes, bytes.Length, out _);
-
-            return Encoding.UTF8.GetString(bytes);
+            return Convert.ToBase64String(bytes);
         }
     }
 }
