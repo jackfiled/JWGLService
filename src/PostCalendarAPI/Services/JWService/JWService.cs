@@ -1,21 +1,30 @@
 ﻿using System.Text.RegularExpressions;
+using System.Net;
 using PostCalendarAPI.Services.JWService.Models;
 
 namespace PostCalendarAPI.Services.JWService
 {
     public class JWService
     {
+        public CookieContainer cookies = new CookieContainer();
+
         private readonly HttpClient _httpClient;
         private ILogger _logger;
-        private static readonly string _baseUrl = "http://jwgl.bupt.edu.cn/jsxsd/";
+        private static readonly string _baseUrl = "https://jwgl.bupt.edu.cn/jsxsd/";
 
         public JWService(ILogger logger)
         {
             _logger = logger;
-            _httpClient = new HttpClient();
+
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = cookies;
+            handler.UseCookies = true;
+            _httpClient = new HttpClient(handler);
+
+            InitService();
         }
 
-        private void InitService()
+        public void InitService()
         {
             _httpClient.DefaultRequestHeaders.Add(
                 "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
@@ -30,7 +39,7 @@ namespace PostCalendarAPI.Services.JWService
             _httpClient.Send(request);
         }
 
-        public async Task<bool> Login(string studentID, string password)
+        public async Task Login(string studentID, string password)
         {
             var loginModel = new LoginModel(studentID, password);
 
@@ -38,19 +47,17 @@ namespace PostCalendarAPI.Services.JWService
             {
                 RequestUri = new Uri(_baseUrl + "xk/LoginToXk"),
                 Method = HttpMethod.Post,
-                Content = JsonContent.Create(loginModel, typeof(LoginModel))
+                Content = new FormUrlEncodedContent(loginModel.keyValuePairs),
             };
 
             // 设置请求的Headers
             request.Headers.Host = "jwgl.bupt.edu.cn";
-            request.Headers.Referrer = new Uri("http://jwgl.bupt.edu.cn/jsxsd/xk/LoginToXk?method=exit&tktime=1631723647000");
+            request.Headers.Referrer = new Uri("http://jwgl.bupt.edu.cn/jsxsd");
 
-            var response = await _httpClient.SendAsync(request);
-
-            return await CheckLogin(response.Content);
+            await _httpClient.SendAsync(request);
         }
 
-        public async Task DownloadExcel(string semester)
+        public async Task<Byte[]> DownloadExcel(string semester)
         {
             var downloadModel = new DownloadModel(semester);
 
@@ -62,13 +69,23 @@ namespace PostCalendarAPI.Services.JWService
             };
 
             var response = await _httpClient.SendAsync(request);
+
+            return await response.Content.ReadAsByteArrayAsync();
         }
 
-        private async Task<bool> CheckLogin(HttpContent content)
+        public async Task<bool> CheckLogin()
         {
-            string html = await content.ReadAsStringAsync();
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri(_baseUrl),
+                Method = HttpMethod.Get,
+            };
 
-            return Regex.IsMatch(html, "用户登录");
+            var response = await _httpClient.SendAsync(request);
+            string content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(content);
+
+            return !Regex.IsMatch(content, "用户登录");
         }
     }
 }
