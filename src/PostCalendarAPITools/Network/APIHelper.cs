@@ -6,7 +6,7 @@ namespace PostCalendarAPITools.Network
 {
     public class APIHelper
     {
-        private readonly string _baseUrl = "https://localhost:7000/api/users";
+        private readonly string _baseUrl = "http://rrricardo.top:7000/api/users";
         private readonly HttpClient _httpClient;
 
         public APIHelper()

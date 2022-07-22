@@ -34,13 +34,6 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     string databaseName = builder.Configuration["Sqlite:Location"];
     string databasePath = Path.Join(Directory.GetCurrentDirectory(), databaseName);
 
-    /*// 判断数据库文件是否存在
-    if(!File.Exists(databasePath))
-    {
-        var stream = File.Create(databasePath);
-        stream.Dispose();
-    }*/
-
     options.UseSqlite($"Data Source={databasePath}");
 });
 

@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决�
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCalendarAPITools", "src\PostCalendarAPITools\PostCalendarAPITools.csproj", "{576CF3C2-2693-44A2-8AD7-DC8B51E96FDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCalendarAPITools", "src\PostCalendarAPITools\PostCalendarAPITools.csproj", "{576CF3C2-2693-44A2-8AD7-DC8B51E96FDE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
