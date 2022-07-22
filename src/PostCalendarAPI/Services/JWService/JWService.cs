@@ -1,8 +1,5 @@
-﻿using System.Buffers.Text;
-using System.Text;
-using System.Net.Http.Headers;
+﻿using System.Text.RegularExpressions;
 using PostCalendarAPI.Services.JWService.Models;
-
 
 namespace PostCalendarAPI.Services.JWService
 {
@@ -33,7 +30,7 @@ namespace PostCalendarAPI.Services.JWService
             _httpClient.Send(request);
         }
 
-        public async Task Login(string studentID, string password)
+        public async Task<bool> Login(string studentID, string password)
         {
             var loginModel = new LoginModel(studentID, password);
 
@@ -49,6 +46,8 @@ namespace PostCalendarAPI.Services.JWService
             request.Headers.Referrer = new Uri("http://jwgl.bupt.edu.cn/jsxsd/xk/LoginToXk?method=exit&tktime=1631723647000");
 
             var response = await _httpClient.SendAsync(request);
+
+            return await CheckLogin(response.Content);
         }
 
         public async Task DownloadExcel(string semester)
@@ -63,6 +62,13 @@ namespace PostCalendarAPI.Services.JWService
             };
 
             var response = await _httpClient.SendAsync(request);
+        }
+
+        private async Task<bool> CheckLogin(HttpContent content)
+        {
+            string html = await content.ReadAsStringAsync();
+
+            return Regex.IsMatch(html, "用户登录");
         }
     }
 }
