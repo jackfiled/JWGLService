@@ -42,6 +42,20 @@ namespace PostCalendarAPITests
         }
 
         [TestMethod]
+        public void AnalyseWeekStringTest3()
+        {
+            // 不要笑
+            // 这个单测来自真实文档
+            string input = "7,9-10,12,14[周]";
+            var result = Course.AnalyseWeekString(input);
+
+            foreach(int number in new int[] { 7, 9, 10, 12, 14})    
+            {
+                Assert.IsTrue(result.Contains(number));
+            }
+        }
+
+        [TestMethod]
         public void AnalyseTimeStringTest1()
         {
             string input = "[01-02]节";

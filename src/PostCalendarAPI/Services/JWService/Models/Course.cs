@@ -87,33 +87,32 @@ namespace PostCalendarAPI.Services.JWService.Models
         /// <exception cref="JWAnalysisException">分析失败引发的异常</exception>
         public static int[] AnalyseWeekString(string weeks)
         {
-            Regex pattern = new Regex(@"^(\d+)-(\d+).*");
-            List<int> ints = new List<int>();
+            var list = new List<int>();
+            var pattern = new Regex(@"^(\d+)-(\d+).*");
 
-            // 先按逗号切分一下
-            // 再匹配每一组
-            var lines = weeks.Split(",");
-            for(int i = 0; i < lines.Length; i++)
+            // 先把中括号之后的内容去掉
+            weeks = weeks.Split("[")[0];
+
+            var numbers = weeks.Split(",");
+            foreach(var number in numbers)
             {
-                var line = lines[i];
-                Match m = pattern.Match(line);
-                if(m.Success)
+                if(int.TryParse(number, out int result))
                 {
-                    int begin = int.Parse(m.Groups[1].Value);
-                    int end = int.Parse(m.Groups[2].Value);
-
-                    for(int j = begin; j <= end; j++)
-                    {
-                        ints.Add(j);
-                    }
+                    list.Add(result);
                 }
                 else
                 {
-                    throw new JWAnalysisException($"解析周次字符串失败{weeks}");
+                    var m = pattern.Match(number);
+                    
+                    if(m.Success)
+                    {
+                        list.Add(int.Parse(m.Groups[1].Value));
+                        list.Add(int.Parse(m.Groups[2].Value));
+                    }
                 }
             }
 
-            return ints.ToArray();
+            return list.ToArray();
         }
 
         /// <summary>
