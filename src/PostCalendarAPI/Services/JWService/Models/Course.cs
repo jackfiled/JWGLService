@@ -35,6 +35,10 @@ namespace PostCalendarAPI.Services.JWService.Models
         /// 课程所在的星期
         /// </summary>
         public int DayOfWeek { get; }
+        /// <summary>
+        /// 表示课程的节数
+        /// </summary>
+        public int Length { get; }
 
         /// <summary>
         /// 创建课程对象
@@ -65,8 +69,14 @@ namespace PostCalendarAPI.Services.JWService.Models
 
             BeginTime = BeginTimeList[beginClass - 1];
             EndTime = BeginTimeList[endClass - 1].AddMinutes(ClassLength);
+            Length = endClass - beginClass;
 
             DayOfWeek = dayOfWeek;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name}-{Teacher}";
         }
 
         /// <summary>

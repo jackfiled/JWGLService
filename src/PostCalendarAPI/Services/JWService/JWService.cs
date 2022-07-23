@@ -90,19 +90,51 @@ namespace PostCalendarAPI.Services.JWService
             return !Regex.IsMatch(content, "用户登录");
         }
 
-        public async Task AnalysisExcel(Stream excelStream)
+        /// <summary>
+        /// 分析excel表格数据流
+        /// </summary>
+        /// <param name="excelStream">excel文件流</param>
+        /// <returns>包含的课程列表</returns>
+        public static IEnumerable<Course> AnalysisExcel(Stream excelStream)
         {
+            var courses = new List<Course>();
             var workbook = new HSSFWorkbook(excelStream);
 
             if(workbook != null)
             {
                 ISheet sheet = workbook.GetSheetAt(0);
 
-                for(int i = sheet.FirstRowNum + 2; i <= sheet.LastRowNum; i++)
-                {
+                int rows = sheet.LastRowNum;
 
+                // 从第二列开始循环
+                // 第一列是时间
+                for(int column = 1; column <= 7; column ++)
+                {
+                    // 从第四行开始
+                    // 最后一行是备注
+                    for(int row = 4; row <= rows - 1; row++)
+                    {
+                        ICell? cell = sheet.GetRow(row).GetCell(column);
+                        if(cell != null)
+                        {
+                            string content = cell.StringCellValue;
+                            // 判断单元格是否为空
+                            if(content.Length != 1)
+                            {
+                                // column在这里可以表示星期几
+                                IEnumerable<Course> result = AnalyseSingleCell(content, column);
+                                courses.AddRange(result);
+
+                                // 一次课程按节数占据多个单元格
+                                // 加上节数以避免重复读取
+                                row += result.First().Length;
+                            }
+                        }
+                    }
                 }
             }
+
+            return courses;
         }
 
         /// <summary>
@@ -112,38 +144,24 @@ namespace PostCalendarAPI.Services.JWService
         /// <param name="dayOfWeek">单元格所在的星期几</param>
         /// <returns>课程列表</returns>
         /// <exception cref="JWAnalysisException">解析失败引发的异常</exception>
-        private IEnumerable<Course> AnalyseSingleCell(string cellString, int dayOfWeek)
+        private static IEnumerable<Course> AnalyseSingleCell(string cellString, int dayOfWeek)
         {
+            // 这里注意
+            // lines的第一行是一个空字符串
+            // 5行文字有6行
             var lines = cellString.Split("\n");
             var courses = new List<Course>();
 
             switch(lines.Length)
             {
-                case 5:
-                    // 只有一门课程的单元格
-                    // 没有分组
-                    int[] weeks = Course.AnalyseWeekString(lines[2]);
-                    int[] classes = Course.AnalyseTimeString(lines[4]);
-                    var course = new Course(
-                        lines[0],
-                        lines[1],
-                        lines[3],
-                        weeks,
-                        classes[0],
-                        classes[1],
-                        dayOfWeek
-                        );
-                    courses.Add(course);
-
-                    break;
                 case 6:
                     // 只有一门课程的单元格
-                    // 含有分组
-                    weeks = Course.AnalyseWeekString(lines[3]);
-                    classes = Course.AnalyseTimeString(lines[5]);
-                    course = new Course(
-                        lines[0],
-                        lines[2] + lines[1],// 老师和分组合并显示
+                    // 没有分组
+                    int[] weeks = Course.AnalyseWeekString(lines[3]);
+                    int[] classes = Course.AnalyseTimeString(lines[5]);
+                    var course = new Course(
+                        lines[1],
+                        lines[2],
                         lines[4],
                         weeks,
                         classes[0],
@@ -153,28 +171,15 @@ namespace PostCalendarAPI.Services.JWService
                     courses.Add(course);
 
                     break;
-                case 10:
-                    // 含有两门课程的单元格
-                    // 均没有分组
-                    weeks = Course.AnalyseWeekString(lines[2]);
-                    classes = Course.AnalyseTimeString(lines[4]);
+                case 7:
+                    // 只有一门课程的单元格
+                    // 含有分组
+                    weeks = Course.AnalyseWeekString(lines[4]);
+                    classes = Course.AnalyseTimeString(lines[6]);
                     course = new Course(
-                        lines[0],
                         lines[1],
-                        lines[3],
-                        weeks,
-                        classes[0],
-                        classes[1],
-                        dayOfWeek
-                        );
-                    courses.Add(course);
-
-                    weeks = Course.AnalyseWeekString(lines[7]);
-                    classes = Course.AnalyseTimeString(lines[9]);
-                    course = new Course(
+                        lines[3] + lines[2],// 老师和分组合并显示
                         lines[5],
-                        lines[6],
-                        lines[8],
                         weeks,
                         classes[0],
                         classes[1],
@@ -185,17 +190,47 @@ namespace PostCalendarAPI.Services.JWService
                     break;
                 case 11:
                     // 含有两门课程的单元格
+                    // 均没有分组
+                    weeks = Course.AnalyseWeekString(lines[3]);
+                    classes = Course.AnalyseTimeString(lines[5]);
+                    course = new Course(
+                        lines[1],
+                        lines[2],
+                        lines[4],
+                        weeks,
+                        classes[0],
+                        classes[1],
+                        dayOfWeek
+                        );
+                    courses.Add(course);
+
+                    weeks = Course.AnalyseWeekString(lines[8]);
+                    classes = Course.AnalyseTimeString(lines[10]);
+                    course = new Course(
+                        lines[6],
+                        lines[7],
+                        lines[9],
+                        weeks,
+                        classes[0],
+                        classes[1],
+                        dayOfWeek
+                        );
+                    courses.Add(course);
+
+                    break;
+                case 12:
+                    // 含有两门课程的单元格
                     // 有一门课程有分组
                     // 通过第五行是否存在”节“来判断
-                    if (lines[4].Contains("节"))
+                    if (lines[4].Contains('节'))
                     {
                         // 第一门没有分组
-                        weeks = Course.AnalyseWeekString(lines[2]);
-                        classes = Course.AnalyseTimeString(lines[4]);
+                        weeks = Course.AnalyseWeekString(lines[3]);
+                        classes = Course.AnalyseTimeString(lines[5]);
                         course = new Course(
-                            lines[0],
                             lines[1],
-                            lines[3],
+                            lines[2],
+                            lines[4],
                             weeks,
                             classes[0],
                             classes[1],
@@ -222,12 +257,12 @@ namespace PostCalendarAPI.Services.JWService
                     else
                     {
                         // 第一门有分组
-                        weeks = Course.AnalyseWeekString(lines[3]);
-                        classes = Course.AnalyseTimeString(lines[5]);
+                        weeks = Course.AnalyseWeekString(lines[4]);
+                        classes = Course.AnalyseTimeString(lines[6]);
                         course = new Course(
-                            lines[0],
-                            lines[2] + lines[1],// 老师和分组合并显示
-                            lines[4],
+                            lines[1],
+                            lines[3] + lines[2],// 老师和分组合并显示
+                            lines[5],
                             weeks,
                             classes[0],
                             classes[1],
@@ -236,12 +271,12 @@ namespace PostCalendarAPI.Services.JWService
                         courses.Add(course);
 
                         // 第二门没有分组
-                        weeks = Course.AnalyseWeekString(lines[8]);
-                        classes = Course.AnalyseTimeString(lines[10]);
+                        weeks = Course.AnalyseWeekString(lines[9]);
+                        classes = Course.AnalyseTimeString(lines[11]);
                         course = new Course(
-                            lines[6],
                             lines[7],
-                            lines[9],
+                            lines[8],
+                            lines[10],
                             weeks,
                             classes[0],
                             classes[1],
@@ -251,15 +286,15 @@ namespace PostCalendarAPI.Services.JWService
 
                         break;
                     }
-                case 12:
+                case 13:
                     // 含有两门课程的单元格
                     // 均有分组
-                    weeks = Course.AnalyseWeekString(lines[3]);
-                    classes = Course.AnalyseTimeString(lines[5]);
+                    weeks = Course.AnalyseWeekString(lines[4]);
+                    classes = Course.AnalyseTimeString(lines[6]);
                     course = new Course(
-                        lines[0],
-                        lines[2] + lines[1],// 老师和分组合并显示
-                        lines[4],
+                        lines[1],
+                        lines[3] + lines[2],// 老师和分组合并显示
+                        lines[5],
                         weeks,
                         classes[0],
                         classes[1],
@@ -267,12 +302,12 @@ namespace PostCalendarAPI.Services.JWService
                         );
                     courses.Add(course);
 
-                    weeks = Course.AnalyseWeekString(lines[9]);
-                    classes = Course.AnalyseTimeString(lines[11]);
+                    weeks = Course.AnalyseWeekString(lines[10]);
+                    classes = Course.AnalyseTimeString(lines[12]);
                     course = new Course(
-                        lines[6],
-                        lines[8] + lines[7],// 老师和分组合并显示
-                        lines[10],
+                        lines[7],
+                        lines[9] + lines[8],// 老师和分组合并显示
+                        lines[11],
                         weeks,
                         classes[0],
                         classes[1],
@@ -282,7 +317,7 @@ namespace PostCalendarAPI.Services.JWService
 
                     break;
                 default:
-                    throw new JWAnalysisException($"解析单元格失败,含有{lines.Length}行");
+                    throw new JWAnalysisException($"解析单元格失败,含有{lines.Length}行, 内容为{cellString}");
             }
 
             return courses;

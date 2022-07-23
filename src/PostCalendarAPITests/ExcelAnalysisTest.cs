@@ -1,5 +1,5 @@
 ﻿using PostCalendarAPI.Services.JWService.Models;
-
+using PostCalendarAPI.Services.JWService;
 
 namespace PostCalendarAPITests
 {
@@ -59,6 +59,46 @@ namespace PostCalendarAPITests
 
             Assert.AreEqual(6, result[0]);
             Assert.AreEqual(8, result[1]);
+        }
+
+        [TestMethod]
+        public void AnalyseExcelTest1()
+        {
+            // 测试用excel表格甲
+            // 一共有14次课程
+            string path = @"C:\Users\ricardo.DESKTOP-N6OVBK5\Desktop\a.xls";
+
+            using(var stream = File.OpenRead(path))
+            {
+                var result = JWService.AnalysisExcel(stream);
+
+                foreach(var item in result)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+
+                Assert.AreEqual(14, result.Count());
+            }
+        }
+
+        [TestMethod]
+        public void AnalyseExcelTest2()
+        {
+            // 测试用excel表格乙
+            // 一共有10次课程
+            string path = @"C:\Users\ricardo.DESKTOP-N6OVBK5\Desktop\b.xls";
+
+            using(var stream = File.OpenRead(path))
+            {
+                var result = JWService.AnalysisExcel(stream);
+
+                foreach(var item in result)
+                {
+                    Console.WriteLine(item.ToString());
+                }
+
+                Assert.AreEqual(10, result.Count());
+            }
         }
     }
 }
