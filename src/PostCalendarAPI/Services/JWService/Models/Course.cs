@@ -74,6 +74,7 @@ namespace PostCalendarAPI.Services.JWService.Models
         /// </summary>
         /// <param name="weeks">表示周数的字符串</param>
         /// <returns>周数数组</returns>
+        /// <exception cref="JWAnalysisException">分析失败引发的异常</exception>
         public static int[] AnalyseWeekString(string weeks)
         {
             Regex pattern = new Regex(@"^(\d+)-(\d+).*");
@@ -96,11 +97,21 @@ namespace PostCalendarAPI.Services.JWService.Models
                         ints.Add(j);
                     }
                 }
+                else
+                {
+                    throw new JWAnalysisException($"解析周次字符串失败{weeks}");
+                }
             }
 
             return ints.ToArray();
         }
 
+        /// <summary>
+        /// 解析上课时间字符串
+        /// </summary>
+        /// <param name="times">Excel表格中表示上课节次字符串</param>
+        /// <returns>含有第一节和最后一节课编号的数组</returns>
+        /// <exception cref="JWAnalysisException">分析失败引发的异常</exception>
         public static int[] AnalyseTimeString(string times)
         {
             Regex pattern = new Regex(@"\[(.*)\]节");
@@ -121,7 +132,7 @@ namespace PostCalendarAPI.Services.JWService.Models
             }
             else
             {
-                throw new JWAnalysisException();
+                throw new JWAnalysisException($"解析上课时间字符串失败{times}");
             }
         }
 
