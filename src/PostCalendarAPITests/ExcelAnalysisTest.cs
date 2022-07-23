@@ -41,6 +41,24 @@ namespace PostCalendarAPITests
             }
         }
 
+        [TestMethod]
+        public void AnalyseTimeStringTest1()
+        {
+            string input = "[01-02]节";
+            var result = Course.AnalyseTimeString(input);
 
+            Assert.AreEqual(1, result[0]);
+            Assert.AreEqual(2, result[1]);
+        }
+
+        [TestMethod]
+        public void AnalyseTimeStringTest2()
+        {
+            string input = "[06-07-08]节";
+            var result = Course.AnalyseTimeString(input);
+
+            Assert.AreEqual(6, result[0]);
+            Assert.AreEqual(8, result[1]);
+        }
     }
 }

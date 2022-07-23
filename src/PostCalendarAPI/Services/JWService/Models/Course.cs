@@ -69,11 +69,18 @@ namespace PostCalendarAPI.Services.JWService.Models
             DayOfWeek = dayOfWeek;
         }
 
+        /// <summary>
+        /// 解析周数字符串
+        /// </summary>
+        /// <param name="weeks">表示周数的字符串</param>
+        /// <returns>周数数组</returns>
         public static int[] AnalyseWeekString(string weeks)
         {
             Regex pattern = new Regex(@"^(\d+)-(\d+).*");
             List<int> ints = new List<int>();
 
+            // 先按逗号切分一下
+            // 再匹配每一组
             var lines = weeks.Split(",");
             for(int i = 0; i < lines.Length; i++)
             {
@@ -92,6 +99,30 @@ namespace PostCalendarAPI.Services.JWService.Models
             }
 
             return ints.ToArray();
+        }
+
+        public static int[] AnalyseTimeString(string times)
+        {
+            Regex pattern = new Regex(@"\[(.*)\]节");
+
+            Match match = pattern.Match(times);
+
+            if(match.Success)
+            {
+                // 把[]中的字符串按-切分
+                // 去头尾的数据
+                var numbers = match.Groups[1].Value.Split("-");
+
+                return new int[]
+                {
+                    int.Parse(numbers.First()),
+                    int.Parse(numbers.Last())
+                };
+            }
+            else
+            {
+                throw new JWAnalysisException();
+            }
         }
 
 
