@@ -48,7 +48,7 @@ namespace PostCalendarAPITests
 
             await service.Login("", "");
 
-            await service.DownloadExcel("2022-2023-1");
+            await service.GetSemester("2022-2023-1");
         }
 
         private void PrintCookies(CookieContainer container)

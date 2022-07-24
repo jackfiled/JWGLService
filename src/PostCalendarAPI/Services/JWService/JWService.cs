@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using System.Net;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -6,17 +7,21 @@ using PostCalendarAPI.Services.JWService.Models;
 
 namespace PostCalendarAPI.Services.JWService
 {
-    public class JWService : IDisposable
+    public class JWService : IDisposable, IJWService
     {
         public CookieContainer cookies = new CookieContainer();
 
+        private Stream? excelStream;
+        private DateTime semesterBeginTime;
         private readonly HttpClient _httpClient;
-        private ILogger _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger _logger;
         private static readonly string _baseUrl = "https://jwgl.bupt.edu.cn/jsxsd/";
 
-        public JWService(ILogger logger)
+        public JWService(ILogger logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
 
             var handler = new HttpClientHandler();
             handler.CookieContainer = cookies;
@@ -31,22 +36,7 @@ namespace PostCalendarAPI.Services.JWService
             _httpClient.Dispose();
         }
 
-        public void InitService()
-        {
-            _httpClient.DefaultRequestHeaders.Add(
-                "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
-                );
-
-            var request = new HttpRequestMessage()
-            {
-                RequestUri = new Uri(_baseUrl),
-                Method = HttpMethod.Get,
-            };
-
-            _httpClient.Send(request);
-        }
-
-        public async Task Login(string studentID, string password)
+        public async Task<bool> Login(string studentID, string password)
         {
             var loginModel = new LoginModel(studentID, password);
 
@@ -62,9 +52,11 @@ namespace PostCalendarAPI.Services.JWService
             request.Headers.Referrer = new Uri("http://jwgl.bupt.edu.cn/jsxsd");
 
             await _httpClient.SendAsync(request);
+
+            return await CheckLogin();
         }
 
-        public async Task<Byte[]> DownloadExcel(string semester)
+        public async Task GetSemester(string semester)
         {
             var downloadModel = new DownloadModel(semester);
 
@@ -77,9 +69,38 @@ namespace PostCalendarAPI.Services.JWService
 
             var response = await _httpClient.SendAsync(request);
             
-            return await response.Content.ReadAsByteArrayAsync();
+            excelStream = await response.Content.ReadAsStreamAsync();
         }
 
+        public async Task<IEnumerable<Course>?> GetCourses()
+        {
+            if(excelStream == null)
+            {
+                return null;
+            }
+            else
+            {
+                return await Task.Run(() => AnalysisExcel(excelStream));
+            }
+        }
+
+        public async Task<Stream?> GetICSStream()
+        {
+            if(excelStream == null)
+            {
+                return null;
+            }
+            else
+            {
+                var courses = await Task.Run(() => AnalysisExcel(excelStream));
+                return await Task.Run(() => GenerateICSStream(courses, semesterBeginTime));
+            }
+        }
+
+        /// <summary>
+        /// 检验是否登录
+        /// </summary>
+        /// <returns></returns>
         public async Task<bool> CheckLogin()
         {
             var request = new HttpRequestMessage()
@@ -140,6 +161,93 @@ namespace PostCalendarAPI.Services.JWService
             }
 
             return courses;
+        }
+
+        public static Stream GenerateICSStream(IEnumerable<Course> courses, DateTime semesterBeginTime)
+        {
+            StringBuilder builder = new StringBuilder();
+            string timePattern = "yyyyMMddTHHmmssZ";
+
+            builder.AppendLine("BEGIN:VCALENDAR");
+            builder.AppendLine("VERSION:2.0");
+
+            foreach(var course in courses)
+            {
+                foreach(int week in course.Weeks)
+                {
+                    // 事件开始
+                    builder.AppendLine("BEGIN:VEVENT");
+                    // 创建事件的时间
+                    builder.AppendLine($"DTSTAMP:{DateTime.UtcNow.ToString(timePattern)}");
+                    // 创建GUID
+                    builder.AppendLine($"UID:{Guid.NewGuid().ToString()}");
+                    // 事件的概述
+                    builder.AppendLine($"SUMMARY:{course.Name}");
+                    // 事件的地点
+                    builder.AppendLine($"LOCATION:{course.Place}");
+                    // 事件的详情
+                    builder.AppendLine($"DESCRIPTION:{course.Teacher}");
+                    // 事件的开始时间
+                    var beginTime = semesterBeginTime.AddDays(7 * (week - 1) + course.DayOfWeek - 1);
+                    beginTime = beginTime.Add(course.BeginTime - TimeOnly.MinValue);
+                    builder.AppendLine($"DTSTART;TZID=Asia/Shanghai:{beginTime.ToString(timePattern)}");
+                    // 事件的结束时间
+                    var endTime = semesterBeginTime.AddDays(7 * (week - 1) + course.DayOfWeek - 1);
+                    endTime = endTime.Add(course.EndTime - TimeOnly.MinValue);
+                    builder.AppendLine($"DTEND;TZID=Asia/Shanghai:{endTime.ToString(timePattern)}");
+
+                    // 创建一个15分钟前的提醒
+                    builder.AppendLine("BEGIN:VALARM");
+                    builder.AppendLine("UID:" + Guid.NewGuid().ToString());
+                    builder.AppendLine("ACTION:DISPLAY");
+                    builder.AppendLine("TRIGGER:-PT15M");
+                    builder.AppendLine("END:VALARM");
+
+                    // 结束事件
+                    builder.AppendLine("END:VEVENT");
+                }
+            }
+
+            builder.AppendLine("END:VCALENDAR");
+
+            string result = builder.ToString();
+            return new MemoryStream(Encoding.UTF8.GetBytes(result));
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        private void InitService()
+        {
+            _httpClient.DefaultRequestHeaders.Add(
+                "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
+                );
+
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri(_baseUrl),
+                Method = HttpMethod.Get,
+            };
+
+            _httpClient.Send(request);
+        }
+
+        /// <summary>
+        /// 获取每学期行课第一天的时间
+        /// </summary>
+        /// <returns></returns>
+        private async Task GetSemesterBeginTime()
+        {
+            var client = _httpClientFactory.CreateClient();
+
+            var message = new HttpRequestMessage()
+            {
+                RequestUri = new Uri(_baseUrl),
+                Method= HttpMethod.Get,
+            };
+
+            var response = await client.SendAsync(message);
+            semesterBeginTime = DateTime.Parse(await response.Content.ReadAsStringAsync());
         }
 
         /// <summary>
