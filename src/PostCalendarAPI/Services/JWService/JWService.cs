@@ -6,7 +6,7 @@ using PostCalendarAPI.Services.JWService.Models;
 
 namespace PostCalendarAPI.Services.JWService
 {
-    public class JWService
+    public class JWService : IDisposable
     {
         public CookieContainer cookies = new CookieContainer();
 
@@ -24,6 +24,11 @@ namespace PostCalendarAPI.Services.JWService
             _httpClient = new HttpClient(handler);
 
             InitService();
+        }
+
+        public void Dispose()
+        {
+            _httpClient.Dispose();
         }
 
         public void InitService()
