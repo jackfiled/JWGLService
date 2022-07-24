@@ -27,7 +27,8 @@ namespace PostCalendarAPITests
         public async Task TestLogin()
         {
             var mockLogger = new Mock<ILogger>();
-            var service = new JWService(mockLogger.Object);
+            var mockHttpClient = new Mock<IHttpClientFactory>();
+            var service = new JWService(mockLogger.Object, mockHttpClient.Object);
 
             PrintCookies(service.cookies);
 
@@ -44,7 +45,8 @@ namespace PostCalendarAPITests
         public async Task TestDownload()
         {
             var mockLogger = new Mock<ILogger>();
-            var service = new JWService(mockLogger.Object);
+            var mockHttpClient = new Mock<IHttpClientFactory>();
+            var service = new JWService(mockLogger.Object, mockHttpClient.Object);
 
             await service.Login("", "");
 

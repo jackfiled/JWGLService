@@ -114,5 +114,59 @@ namespace PostCalendarAPITests
                 Assert.AreEqual(10, result.Count());
             }
         }
+
+        [TestMethod]
+        public void GenerateICSStreamTest1()
+        {
+            // 测试用excel表格甲
+            // 一共有14次课程
+            string path = @"C:\Users\ricardo.DESKTOP-N6OVBK5\Desktop\a.xls";
+            string outputPath = @"C:\Users\ricardo.DESKTOP-N6OVBK5\Desktop\a.ics";
+
+            using (var file = File.OpenRead(path))
+            {
+                var courses = JWService.AnalysisExcel(file);
+
+                var beginTime = new DateTime(2022, 2, 28);
+
+                var stream = JWService.GenerateICSStream(courses, beginTime);
+
+                var ms = new MemoryStream();
+                stream.Position = 0;
+                stream.CopyTo(ms);
+
+                using(var output = File.Create(outputPath))
+                {
+                    output.Write(ms.ToArray());
+                }
+            }
+        }
+
+        [TestMethod]
+        public void GenerateICSStreamTest2()
+        {
+            // 测试用excel表格甲
+            // 一共有14次课程
+            string path = @"C:\Users\ricardo.DESKTOP-N6OVBK5\Desktop\b.xls";
+            string outputPath = @"C:\Users\ricardo.DESKTOP-N6OVBK5\Desktop\b.ics";
+
+            using (var file = File.OpenRead(path))
+            {
+                var courses = JWService.AnalysisExcel(file);
+
+                var beginTime = new DateTime(2022, 8, 22);
+
+                var stream = JWService.GenerateICSStream(courses, beginTime);
+
+                var ms = new MemoryStream();
+                stream.Position = 0;
+                stream.CopyTo(ms);
+
+                using (var output = File.Create(outputPath))
+                {
+                    output.Write(ms.ToArray());
+                }
+            }
+        }
     }
 }
