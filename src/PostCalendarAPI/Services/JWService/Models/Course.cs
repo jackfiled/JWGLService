@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PostCalendarAPI.Services.JWService.Models
 {
@@ -76,7 +77,18 @@ namespace PostCalendarAPI.Services.JWService.Models
 
         public override string ToString()
         {
-            return $"{Name}-{Teacher}";
+            var builder = new StringBuilder();
+
+            foreach(int week in Weeks)
+            {
+                builder.Append(week.ToString());
+                builder.Append('-');
+            }
+
+
+            return $"{Name}-{Teacher}\n" +
+                $"{Place}-{BeginTime}-{EndTime}\n" +
+                $"{builder}";
         }
 
         /// <summary>
@@ -106,8 +118,13 @@ namespace PostCalendarAPI.Services.JWService.Models
                     
                     if(m.Success)
                     {
-                        list.Add(int.Parse(m.Groups[1].Value));
-                        list.Add(int.Parse(m.Groups[2].Value));
+                        int begin = int.Parse(m.Groups[1].Value);
+                        int end = int.Parse(m.Groups[2].Value);
+
+                        for(int i = begin; i <= end; i++)
+                        {
+                            list.Add(i);
+                        }
                     }
                 }
             }
