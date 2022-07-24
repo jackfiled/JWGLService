@@ -8,7 +8,7 @@ namespace PostCalendarAPITests
     public class JWLoginTest
     {
         /// <summary>
-        /// ²âÊÔbase64¼ÓÃÜÊÇ·ñ³É¹¦
+        /// ï¿½ï¿½ï¿½ï¿½base64ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É¹ï¿½
         /// </summary>
         /// <returns></returns>
         [TestMethod]
