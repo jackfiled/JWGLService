@@ -26,7 +26,7 @@ namespace PostCalendarAPI.Services.JWService
         /// 获取ICS文件流
         /// </summary>
         /// <returns>ICS流</returns>
-        public Task<Stream?> GetICSStream();
+        public Task<byte[]?> GetICSStream();
 
         /// <summary>
         /// 获取课程列表

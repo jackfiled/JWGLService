@@ -129,15 +129,9 @@ namespace PostCalendarAPITests
 
                 var beginTime = new DateTime(2022, 2, 28);
 
-                var stream = JWService.GenerateICSStream(courses, beginTime);
-
-                var ms = new MemoryStream();
-                stream.Position = 0;
-                stream.CopyTo(ms);
-
-                using(var output = File.Create(outputPath))
+                using (var output = File.Create(outputPath))
                 {
-                    output.Write(ms.ToArray());
+                    output.Write(JWService.GenerateICSStream(courses, beginTime));
                 }
             }
         }
@@ -156,15 +150,9 @@ namespace PostCalendarAPITests
 
                 var beginTime = new DateTime(2022, 8, 22);
 
-                var stream = JWService.GenerateICSStream(courses, beginTime);
-
-                var ms = new MemoryStream();
-                stream.Position = 0;
-                stream.CopyTo(ms);
-
                 using (var output = File.Create(outputPath))
                 {
-                    output.Write(ms.ToArray());
+                    output.Write(JWService.GenerateICSStream(courses, beginTime));
                 }
             }
         }

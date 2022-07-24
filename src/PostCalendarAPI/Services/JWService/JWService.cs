@@ -84,7 +84,7 @@ namespace PostCalendarAPI.Services.JWService
             }
         }
 
-        public async Task<Stream?> GetICSStream()
+        public async Task<byte[]?> GetICSStream()
         {
             if(excelStream == null)
             {
@@ -163,10 +163,11 @@ namespace PostCalendarAPI.Services.JWService
             return courses;
         }
 
-        public static Stream GenerateICSStream(IEnumerable<Course> courses, DateTime semesterBeginTime)
+        public static byte[] GenerateICSStream(IEnumerable<Course> courses, DateTime semesterBeginTime)
         {
             StringBuilder builder = new StringBuilder();
-            string timePattern = "yyyyMMddTHHmmssZ";
+            string timePattern = "yyyyMMddTHHmmss";
+            string timeUtcPattern = "yyyyMMddTHHmmssZ";
 
             builder.AppendLine("BEGIN:VCALENDAR");
             builder.AppendLine("VERSION:2.0");
@@ -178,7 +179,7 @@ namespace PostCalendarAPI.Services.JWService
                     // 事件开始
                     builder.AppendLine("BEGIN:VEVENT");
                     // 创建事件的时间
-                    builder.AppendLine($"DTSTAMP:{DateTime.UtcNow.ToString(timePattern)}");
+                    builder.AppendLine($"DTSTAMP:{DateTime.UtcNow.ToString(timeUtcPattern)}");
                     // 创建GUID
                     builder.AppendLine($"UID:{Guid.NewGuid().ToString()}");
                     // 事件的概述
@@ -211,7 +212,7 @@ namespace PostCalendarAPI.Services.JWService
             builder.AppendLine("END:VCALENDAR");
 
             string result = builder.ToString();
-            return new MemoryStream(Encoding.UTF8.GetBytes(result));
+            return Encoding.UTF8.GetBytes(result);
         }
 
         /// <summary>
