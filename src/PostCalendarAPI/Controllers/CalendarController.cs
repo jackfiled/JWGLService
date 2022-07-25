@@ -25,13 +25,15 @@ namespace PostCalendarAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Login(string username, string password, string semester)
+        public async Task<ActionResult> Login(SemesterGetModel model)
         {
-            var ics = _context.ICSInfos.SingleOrDefault(i => i.UserName == username);
+            var ics = _context.ICSInfos.SingleOrDefault(i => i.UserName == model.username);
 
             // 先判断该用户是否已经请求过
             // 如果在六小时内请求过则拒绝请求
-            if(ics != default)
+            // 在测试时先取消这个限制
+            // 生产环境取消注释
+            /*if(ics != default)
             {
                 DateTime createDateTime = DateTime.Parse(ics.CreatedDateTimeString);
                 TimeSpan span = DateTime.Now - createDateTime;
@@ -41,26 +43,26 @@ namespace PostCalendarAPI.Controllers
                     _logger.LogInformation("User {username} reject", username);
                     return BadRequest($"请求过于频繁, 请在{span}后再试");
                 }
-            }
+            }*/
 
-            if(await _jWService.Login(username, password))
+            if(await _jWService.Login(model.username, model.password))
             {
-                _logger.LogInformation("User {username} log in", username);
+                _logger.LogInformation("User {username} log in", model.username);
 
-                await _jWService.GetSemester(semester);
+                await _jWService.GetSemester(model.semester);
 
                 byte[]? stream = await _jWService.GetICSStream();
 
                 if(stream == null)
                 {
-                    _logger.LogWarning("User {username} ICS stream generate failed", username);
+                    _logger.LogWarning("User {username} ICS stream generate failed", model.username);
                 }
                 else
                 {
                     if(ics == default)
                     {
                         // 如果在数据库中不存在就创建
-                        ICSInfo info = new ICSInfo(DateTime.Now, stream, username, semester);
+                        ICSInfo info = new ICSInfo(DateTime.Now, stream, model.username, model.semester);
 
                         _context.ICSInfos.Add(info);
                         await _context.SaveChangesAsync();
@@ -75,7 +77,7 @@ namespace PostCalendarAPI.Controllers
                     }
                 }
 
-                var courses = await _jWService.GetCourses();
+                var courses = _jWService.GetCourses();
                 if(courses == null)
                 {
                     _logger.LogWarning("User {username} get courses failed", courses);
@@ -89,7 +91,7 @@ namespace PostCalendarAPI.Controllers
             }
             else
             {
-                _logger.LogInformation("User {username} log failed", username);
+                _logger.LogInformation("User {username} log failed", model.username);
                 return BadRequest("登录失败，请检查账号或者密码");
             }
         }
@@ -123,4 +125,12 @@ namespace PostCalendarAPI.Controllers
             }
         }
     }
+}
+
+#pragma warning disable CS8618
+public class SemesterGetModel
+{
+    public string username { get; set; }
+    public string password { get; set; }
+    public string semester { get; set; }
 }

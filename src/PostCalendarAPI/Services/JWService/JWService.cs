@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Net;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using PostCalendarAPI.Models;
 using PostCalendarAPI.Services.JWService.Models;
 
 namespace PostCalendarAPI.Services.JWService
@@ -11,17 +12,17 @@ namespace PostCalendarAPI.Services.JWService
     {
         public CookieContainer cookies = new CookieContainer();
 
-        private Stream? excelStream;
-        private DateTime semesterBeginTime;
+        private byte[]? excelBytes;
+        private string? targetSemester;
         private readonly HttpClient _httpClient;
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger _logger;
+        private readonly SemesterInfoContext _context;
         private static readonly string _baseUrl = "https://jwgl.bupt.edu.cn/jsxsd/";
 
-        public JWService(ILogger logger, IHttpClientFactory httpClientFactory)
+        public JWService(ILogger<JWService> logger, SemesterInfoContext context)
         {
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
+            _context = context;
 
             var handler = new HttpClientHandler();
             handler.CookieContainer = cookies;
@@ -38,6 +39,8 @@ namespace PostCalendarAPI.Services.JWService
 
         public async Task<bool> Login(string studentID, string password)
         {
+            _logger.LogInformation("User {studentID} try to login JWGL", studentID);
+
             var loginModel = new LoginModel(studentID, password);
 
             var request = new HttpRequestMessage()
@@ -58,6 +61,7 @@ namespace PostCalendarAPI.Services.JWService
 
         public async Task GetSemester(string semester)
         {
+            targetSemester = semester;
             var downloadModel = new DownloadModel(semester);
 
             var request = new HttpRequestMessage()
@@ -69,31 +73,39 @@ namespace PostCalendarAPI.Services.JWService
 
             var response = await _httpClient.SendAsync(request);
             
-            excelStream = await response.Content.ReadAsStreamAsync();
+            excelBytes = await response.Content.ReadAsByteArrayAsync();
         }
 
-        public async Task<IEnumerable<Course>?> GetCourses()
+        public IEnumerable<CourseInfo>? GetCourses()
         {
-            if(excelStream == null)
+            if(excelBytes == null)
             {
                 return null;
             }
             else
             {
-                return await Task.Run(() => AnalysisExcel(excelStream));
+                var courses = AnalysisExcel(excelBytes);
+                var infos = new List<CourseInfo>();
+
+                foreach(var course in courses)
+                {
+                    infos.Add(new CourseInfo(course));
+                }
+
+                return infos;
             }
         }
 
         public async Task<byte[]?> GetICSStream()
         {
-            if(excelStream == null)
+            if(excelBytes == null)
             {
                 return null;
             }
             else
             {
-                var courses = await Task.Run(() => AnalysisExcel(excelStream));
-                return await Task.Run(() => GenerateICSStream(courses, semesterBeginTime));
+                var courses = await Task.Run(() => AnalysisExcel(excelBytes));
+                return await Task.Run(() => GenerateICSStream(courses, GetSemesterBeginTime()));
             }
         }
 
@@ -121,39 +133,43 @@ namespace PostCalendarAPI.Services.JWService
         /// </summary>
         /// <param name="excelStream">excel文件流</param>
         /// <returns>包含的课程列表</returns>
-        public static IEnumerable<Course> AnalysisExcel(Stream excelStream)
+        public static IEnumerable<Course> AnalysisExcel(byte[] bytes)
         {
             var courses = new List<Course>();
-            var workbook = new HSSFWorkbook(excelStream);
-
-            if(workbook != null)
+            
+            using(MemoryStream stream = new MemoryStream(bytes))
             {
-                ISheet sheet = workbook.GetSheetAt(0);
+                var workbook = new HSSFWorkbook(stream);
 
-                int rows = sheet.LastRowNum;
-
-                // 从第二列开始循环
-                // 第一列是时间
-                for(int column = 1; column <= 7; column ++)
+                if (workbook != null)
                 {
-                    // 从第四行开始
-                    // 最后一行是备注
-                    for(int row = 4; row <= rows - 1; row++)
-                    {
-                        ICell? cell = sheet.GetRow(row).GetCell(column);
-                        if(cell != null)
-                        {
-                            string content = cell.StringCellValue;
-                            // 判断单元格是否为空
-                            if(content.Length != 1)
-                            {
-                                // column在这里可以表示星期几
-                                IEnumerable<Course> result = AnalyseSingleCell(content, column);
-                                courses.AddRange(result);
+                    ISheet sheet = workbook.GetSheetAt(0);
 
-                                // 一次课程按节数占据多个单元格
-                                // 加上节数以避免重复读取
-                                row += result.First().Length;
+                    int rows = sheet.LastRowNum;
+
+                    // 从第二列开始循环
+                    // 第一列是时间
+                    for (int column = 1; column <= 7; column++)
+                    {
+                        // 从第四行开始
+                        // 最后一行是备注
+                        for (int row = 4; row <= rows - 1; row++)
+                        {
+                            ICell? cell = sheet.GetRow(row).GetCell(column);
+                            if (cell != null)
+                            {
+                                string content = cell.StringCellValue;
+                                // 判断单元格是否为空
+                                if (content.Length != 1)
+                                {
+                                    // column在这里可以表示星期几
+                                    IEnumerable<Course> result = AnalyseSingleCell(content, column);
+                                    courses.AddRange(result);
+
+                                    // 一次课程按节数占据多个单元格
+                                    // 加上节数以避免重复读取
+                                    row += result.First().Length;
+                                }
                             }
                         }
                     }
@@ -237,18 +253,24 @@ namespace PostCalendarAPI.Services.JWService
         /// 获取每学期行课第一天的时间
         /// </summary>
         /// <returns></returns>
-        private async Task GetSemesterBeginTime()
+        private DateTime GetSemesterBeginTime()
         {
-            var client = _httpClientFactory.CreateClient();
-
-            var message = new HttpRequestMessage()
+            if(targetSemester != null)
             {
-                RequestUri = new Uri(_baseUrl),
-                Method= HttpMethod.Get,
-            };
-
-            var response = await client.SendAsync(message);
-            semesterBeginTime = DateTime.Parse(await response.Content.ReadAsStringAsync());
+                var info = _context.Semesters.SingleOrDefault(s => s.Semester == targetSemester);
+                if(info == default)
+                {
+                    throw new JWAnalysisException("The semester is invalid");
+                }
+                else
+                {
+                    return DateTime.Parse(info.BeginDateTimeString!);
+                }
+            }
+            else
+            {
+                throw new JWAnalysisException("The semster is invalid");
+            }
         }
 
         /// <summary>

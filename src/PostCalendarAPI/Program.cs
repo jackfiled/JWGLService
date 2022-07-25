@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 
+using PostCalendarAPI.Services.JWService;
 using PostCalendarAPI.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,9 @@ builder.Services.AddDbContext<ICSInfoContext>(options =>
 
     options.UseSqlite($"Data Source={databasePath}");
 });
+
+// Add the JWService
+builder.Services.AddScoped<IJWService, JWService>();
 
 var app = builder.Build();
 

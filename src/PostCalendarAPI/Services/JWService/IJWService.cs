@@ -1,4 +1,4 @@
-﻿using PostCalendarAPI.Services.JWService.Models;
+﻿using PostCalendarAPI.Models;
 
 namespace PostCalendarAPI.Services.JWService
 {
@@ -32,6 +32,6 @@ namespace PostCalendarAPI.Services.JWService
         /// 获取课程列表
         /// </summary>
         /// <returns></returns>
-        public Task<IEnumerable<Course>?> GetCourses();
+        public IEnumerable<CourseInfo>? GetCourses();
     }
 }

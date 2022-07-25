@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
+#nullable disable
+
 namespace PostCalendarAPI.Models
 {
     public class ICSInfo
@@ -10,13 +12,9 @@ namespace PostCalendarAPI.Models
         public string CreatedDateTimeString { get; set; }
         public byte[] Data { get; set; }
 
-        public ICSInfo(int id, string createdDateTimeString, byte[] data, string userName, string semester)
+        public ICSInfo()
         {
-            ID = id;
-            CreatedDateTimeString = createdDateTimeString;
-            Data = data;
-            UserName = userName;
-            Semester = semester;
+            
         }
 
         public ICSInfo(DateTime createdDateTime, byte[] data, string userName, string semester)
