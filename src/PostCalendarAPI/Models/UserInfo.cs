@@ -1,4 +1,6 @@
-﻿namespace PostCalendarAPI.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace PostCalendarAPI.Models
 {
     /// <summary>
     /// 用户信息类
@@ -22,5 +24,21 @@
         /// </summary>
         public int ClassNumber { get; set; }
 
+    }
+
+    public class UserInfoContext : DbContext
+    {
+        public UserInfoContext()
+        {
+            Database.EnsureCreated();
+        }
+
+        public UserInfoContext(DbContextOptions<UserInfoContext> options)
+            : base(options)
+        {
+            Database.EnsureCreated();
+        }
+
+        public DbSet<UserInfo> Users { get; set; } = null!;
     }
 }
