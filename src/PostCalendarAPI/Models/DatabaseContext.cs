@@ -15,6 +15,7 @@ namespace PostCalendarAPI.Models
             Database.EnsureCreated();
         }
 
-        public DbSet<UserInfo> Users { get; set; }   
+        public DbSet<UserInfo> Users { get; set; } 
+        public DbSet<SemesterInfo> Semesters { get; set; }
     }
 }
