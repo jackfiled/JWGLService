@@ -1,4 +1,3 @@
-using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -29,9 +28,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Add the database
-builder.Services.AddDbContext<DatabaseContext>(options =>
+builder.Services.AddDbContext<UserInfoContext>(options =>
 {
-    string databaseName = builder.Configuration["Sqlite:Location"];
+    string databaseName = builder.Configuration["Sqlite:UserInfoLocation"];
+    string databasePath = Path.Join(Directory.GetCurrentDirectory(), databaseName);
+
+    options.UseSqlite($"Data Source={databasePath}");
+});
+builder.Services.AddDbContext<SemesterInfoContext>(options =>
+{
+    string databaseName = builder.Configuration["Sqlite:SemesterInfoLocation"];
     string databasePath = Path.Join(Directory.GetCurrentDirectory(), databaseName);
 
     options.UseSqlite($"Data Source={databasePath}");

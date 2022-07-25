@@ -9,10 +9,10 @@ namespace PostCalendarAPI.Controllers
     [ApiController]
     public class SemesterController : ControllerBase
     {
-        private DatabaseContext _context;
+        private SemesterInfoContext _context;
         private ILogger _logger;
 
-        public SemesterController(DatabaseContext context, ILogger logger)
+        public SemesterController(SemesterInfoContext context, ILogger logger)
         {
             _context = context;
             _logger = logger;

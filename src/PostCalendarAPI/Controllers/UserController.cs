@@ -14,12 +14,12 @@ namespace PostCalendarAPI.Controllers
     public class UsersController : ControllerBase
     {
         private IConfiguration _configuration;
-        private DatabaseContext _context;
+        private UserInfoContext _context;
         private ILogger<UsersController> _logger;
 
         public UsersController(
             IConfiguration configuration, 
-            DatabaseContext databaseContext, 
+            UserInfoContext databaseContext, 
             ILogger<UsersController> logger)
         {
             _configuration = configuration;
