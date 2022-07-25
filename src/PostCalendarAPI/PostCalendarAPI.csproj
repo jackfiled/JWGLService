@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <None Remove="database.db" />
+    <None Remove="SemesterInfo.db" />
   </ItemGroup>
 
   <ItemGroup>

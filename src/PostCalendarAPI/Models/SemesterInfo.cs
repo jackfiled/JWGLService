@@ -13,14 +13,6 @@
         /// <summary>
         /// 学期开始的时间
         /// </summary>
-        public string BeginDateTimeString { get; set; }
-
-        public SemesterInfo(int id, string semester, DateTime beginDateTime)
-        {
-            ID = id;
-            Semester = semester;
-            BeginDateTimeString = beginDateTime.ToString();
-        }
-        
+        public string BeginDateTimeString { get; set; }        
     }
 }

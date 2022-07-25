@@ -50,7 +50,7 @@ namespace PostCalendarAPI.Controllers
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("student ${user.StudentId} created", user.StudentID);
+            _logger.LogInformation("student {user.StudentId} created", user.StudentID);
 
             return CreatedAtAction(
                 nameof(CreateUser),

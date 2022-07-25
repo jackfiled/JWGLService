@@ -9,7 +9,7 @@ namespace PostCalendarAPI.Models
 
         }
 
-        public SemesterInfoContext(DbContextOptions<SemesterInfoContext> options)
+        public SemesterInfoContext(DbContextOptions<SemesterInfoContext> options) : base(options)
         {
             Database.EnsureCreated();
         }

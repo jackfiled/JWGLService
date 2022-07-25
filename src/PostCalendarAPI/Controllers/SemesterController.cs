@@ -12,28 +12,13 @@ namespace PostCalendarAPI.Controllers
         private SemesterInfoContext _context;
         private ILogger _logger;
 
-        public SemesterController(SemesterInfoContext context, ILogger logger)
+        public SemesterController(SemesterInfoContext context, ILogger<SemesterController> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        [HttpGet("{id}")]
-        public ActionResult GetByID(int id)
-        {
-            var semester = _context.Semesters.SingleOrDefault(s => s.ID == id);
-
-            if(semester == default)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return Ok(semester);
-            }
-        }
-
-        [HttpGet("{semester}")]
+        [HttpGet("{semesterString}")]
         public ActionResult GetBySemester(string semesterString)
         {
             var semester = _context.Semesters.SingleOrDefault(s => s.Semester == semesterString);
@@ -54,7 +39,7 @@ namespace PostCalendarAPI.Controllers
             await _context.Semesters.AddAsync(info);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Semester ${info.Semester} created", info.Semester);
+            _logger.LogInformation("Semester {info.Semester} created", info.Semester);
 
             return CreatedAtAction(
                 nameof(CreateSemester),
@@ -89,7 +74,7 @@ namespace PostCalendarAPI.Controllers
                     }
                 }
 
-                _logger.LogInformation("Semester ${info.Semester} Updated", info.Semester);
+                _logger.LogInformation("Semester {info.Semester} Updated", info.Semester);
                 return NoContent();
             }
         }
@@ -101,7 +86,7 @@ namespace PostCalendarAPI.Controllers
 
             if(info == null)
             {
-                _logger.LogInformation("Try to delete ${id} but not found", id);
+                _logger.LogInformation("Try to delete {id} but not found", id);
                 return NotFound();
             }
             else
@@ -109,7 +94,7 @@ namespace PostCalendarAPI.Controllers
                 _context.Semesters.Remove(info);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("${info.Semester} deleted", info.Semester);
+                _logger.LogInformation("{info.Semester} deleted", info.Semester);
                 return NoContent();
             }
         }
