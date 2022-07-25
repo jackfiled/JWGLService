@@ -42,6 +42,13 @@ builder.Services.AddDbContext<SemesterInfoContext>(options =>
 
     options.UseSqlite($"Data Source={databasePath}");
 });
+builder.Services.AddDbContext<ICSInfoContext>(options =>
+{
+    string databaseName = builder.Configuration["Sqlite:ICSInfoLocation"];
+    string databasePath = Path.Join(Directory.GetCurrentDirectory(), databaseName);
+
+    options.UseSqlite($"Data Source={databasePath}");
+});
 
 var app = builder.Build();
 
