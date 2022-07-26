@@ -25,7 +25,7 @@ namespace PostCalendarAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Login(SemesterGetModel model)
+        public async Task<ActionResult> Login(JWLoginModel model)
         {
             var ics = _context.ICSInfos.SingleOrDefault(i => i.UserName == model.username);
 
@@ -33,19 +33,19 @@ namespace PostCalendarAPI.Controllers
             // 如果在六小时内请求过则拒绝请求
             // 在测试时先取消这个限制
             // 生产环境取消注释
-            /*if(ics != default)
+            if (ics != default)
             {
                 DateTime createDateTime = DateTime.Parse(ics.CreatedDateTimeString);
                 TimeSpan span = DateTime.Now - createDateTime;
 
-                if (span >= new TimeSpan(6, 0, 0))
+                if (span >= new TimeSpan(24, 0, 0))
                 {
-                    _logger.LogInformation("User {username} reject", username);
+                    _logger.LogInformation("User {username} reject", model.username);
                     return BadRequest($"请求过于频繁, 请在{span}后再试");
                 }
-            }*/
+            }
 
-            if(await _jWService.Login(model.username, model.password))
+            if (await _jWService.Login(model.username, model.password))
             {
                 _logger.LogInformation("User {username} log in", model.username);
 
@@ -125,12 +125,4 @@ namespace PostCalendarAPI.Controllers
             }
         }
     }
-}
-
-#pragma warning disable CS8618
-public class SemesterGetModel
-{
-    public string username { get; set; }
-    public string password { get; set; }
-    public string semester { get; set; }
 }

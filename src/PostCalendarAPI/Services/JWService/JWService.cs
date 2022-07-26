@@ -39,8 +39,6 @@ namespace PostCalendarAPI.Services.JWService
 
         public async Task<bool> Login(string studentID, string password)
         {
-            _logger.LogInformation("User {studentID} try to login JWGL", studentID);
-
             var loginModel = new LoginModel(studentID, password);
 
             var request = new HttpRequestMessage()
@@ -52,7 +50,7 @@ namespace PostCalendarAPI.Services.JWService
 
             // 设置请求的Headers
             request.Headers.Host = "jwgl.bupt.edu.cn";
-            request.Headers.Referrer = new Uri("http://jwgl.bupt.edu.cn/jsxsd");
+            request.Headers.Referrer = new Uri(_baseUrl);
 
             await _httpClient.SendAsync(request);
 
@@ -179,6 +177,12 @@ namespace PostCalendarAPI.Services.JWService
             return courses;
         }
 
+        /// <summary>
+        /// 产生ICS文件流
+        /// </summary>
+        /// <param name="courses">课程列表</param>
+        /// <param name="semesterBeginTime">学期开始时间</param>
+        /// <returns>ICS文件字节数组</returns>
         public static byte[] GenerateICSStream(IEnumerable<Course> courses, DateTime semesterBeginTime)
         {
             StringBuilder builder = new StringBuilder();
@@ -246,7 +250,16 @@ namespace PostCalendarAPI.Services.JWService
                 Method = HttpMethod.Get,
             };
 
-            _httpClient.Send(request);
+            HttpResponseMessage response = _httpClient.Send(request);
+            if(response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("JWservice init successful");
+            }
+            else
+            {
+                _logger.LogWarning("JWservice init failed, status code {response.StatusCode}", 
+                    response.StatusCode);
+            }
         }
 
         /// <summary>
