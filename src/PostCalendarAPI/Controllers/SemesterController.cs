@@ -181,6 +181,9 @@ namespace PostCalendarAPI.Controllers
                 semesters.Add(new Semester(info));
             }
 
+            // 遍历之前先按照时间顺序排序
+            semesters.Sort();
+
             // 初始化为最后一个学期
             // 如果在遍历之后变量没有发生变化
             // 说明当前时间在所有学期开始时间之后
