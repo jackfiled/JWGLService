@@ -18,6 +18,25 @@ namespace PostCalendarAPI.Models
         public string? BeginDateTimeString { get; set; }        
     }
 
+    internal class Semester : IComparable<Semester>
+    {
+        public string SemesterString { get; set; }
+
+        public DateTime BeginDateTime { get; set; }
+
+        public Semester(SemesterInfo info)
+        {
+            SemesterString = info.Semester!;
+            BeginDateTime = DateTime.Parse(info.BeginDateTimeString!);
+        }
+
+        public int CompareTo(Semester? other)
+        {
+            return BeginDateTime.CompareTo(other?.BeginDateTime);
+        }
+
+    }
+
     public class SemesterInfoContext : DbContext
     {
         public SemesterInfoContext()

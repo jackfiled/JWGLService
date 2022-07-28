@@ -18,18 +18,73 @@ namespace PostCalendarAPI.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// 通过学期字符串获得学期的开学时间
+        /// </summary>
+        /// <param name="semesterString">学期字符串</param>
+        /// <returns>
+        /// 200 学期的开学时间 
+        /// 404 所查询的学期未开学或者课表未公布
+        /// </returns>
         [HttpGet("{semesterString}")]
         public ActionResult GetBySemester(string semesterString)
         {
             var semester = _context.Semesters.SingleOrDefault(s => s.Semester == semesterString);
 
-            if(semester == default)
+            if (semester == default)
             {
                 return NotFound();
             }
             else
             {
                 return Ok(semester);
+            }
+        }
+
+        /// <summary>
+        /// 获得当天所在的学期
+        /// </summary>
+        /// <returns>
+        /// 200 学期字符串
+        /// 400 
+        /// </returns>
+        [HttpGet("time")]
+        public ActionResult GetTodaySemester()
+        {
+            String? result = GetSemester(DateTime.Now);
+
+            if(result == null)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok(result);
+            }
+        }
+
+        /// <summary>
+        /// 获得指定时间字符串所在的学期
+        /// </summary>
+        /// <param name="time">时间字符串</param>
+        /// <returns>
+        /// 200 学期字符串
+        /// 400 
+        /// </returns>
+        [HttpGet("time/{time}")]
+        public ActionResult GetSemester(String time)
+        {
+            DateTime dateTime = DateTime.Parse(time);
+
+            String? result = GetSemester(dateTime);
+
+            if(result == null)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok(result);
             }
         }
 
@@ -109,5 +164,44 @@ namespace PostCalendarAPI.Controllers
         {
             return _context.Semesters.Any(s => s.ID == id);
         }
+
+        /// <summary>
+        /// 获取指定日期所在的学期
+        /// </summary>
+        /// <param name="time">指定的日期</param>
+        /// <returns>学期字符串</returns>
+        private String? GetSemester(DateTime time)
+        {
+            List<SemesterInfo> infos = _context.Semesters.ToList();
+
+            List<Semester> semesters = new List<Semester>();
+
+            foreach (var info in infos)
+            {
+                semesters.Add(new Semester(info));
+            }
+
+            // 初始化为最后一个学期
+            // 如果在遍历之后变量没有发生变化
+            // 说明当前时间在所有学期开始时间之后
+            int target = infos.Count - 1;
+            for (int i = 0; i < infos.Count; i++)
+            {
+                if (time < semesters[i].BeginDateTime)
+                {
+                    target = i - 1;
+                    break;
+                }
+            }
+
+            if(target == -1)
+            {
+                return null;
+            }
+            else
+            {
+                return semesters[target].SemesterString;
+            }
+        }  
     }
 }
