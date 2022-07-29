@@ -1,6 +1,7 @@
 using PostCalendarAPI.Services.JWService;
 using PostCalendarAPI.Services.JWService.Models;
 using Moq;
+using PostCalendarAPI.Models;
 
 namespace PostCalendarAPITests
 {
@@ -26,9 +27,9 @@ namespace PostCalendarAPITests
         [TestMethod]
         public async Task TestLogin()
         {
-            var mockLogger = new Mock<ILogger>();
-            var mockHttpClient = new Mock<IHttpClientFactory>();
-            var service = new JWService(mockLogger.Object, mockHttpClient.Object);
+            var mockLogger = new Mock<ILogger<JWService>>();
+            var context = new SemesterInfoContext();
+            var service = new JWService(mockLogger.Object, context);
 
             PrintCookies(service.cookies);
 
@@ -44,9 +45,9 @@ namespace PostCalendarAPITests
         [TestMethod]
         public async Task TestDownload()
         {
-            var mockLogger = new Mock<ILogger>();
-            var mockHttpClient = new Mock<IHttpClientFactory>();
-            var service = new JWService(mockLogger.Object, mockHttpClient.Object);
+            var mockLogger = new Mock<ILogger<JWService>>();
+            var context = new SemesterInfoContext();
+            var service = new JWService(mockLogger.Object, context);
 
             await service.Login("", "");
 

@@ -84,7 +84,9 @@ namespace PostCalendarAPITests
 
             using(var stream = File.OpenRead(path))
             {
-                var result = JWService.AnalysisExcel(stream);
+                byte[] buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, (int)stream.Length);
+                var result = JWService.AnalysisExcel(buffer);
 
                 foreach(var item in result)
                 {
@@ -104,9 +106,11 @@ namespace PostCalendarAPITests
 
             using(var stream = File.OpenRead(path))
             {
-                var result = JWService.AnalysisExcel(stream);
+                byte[] buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, (int)stream.Length);
+                var result = JWService.AnalysisExcel(buffer);
 
-                foreach(var item in result)
+                foreach (var item in result)
                 {
                     Console.WriteLine(item.ToString());
                 }
@@ -125,7 +129,10 @@ namespace PostCalendarAPITests
 
             using (var file = File.OpenRead(path))
             {
-                var courses = JWService.AnalysisExcel(file);
+                byte[] buffer = new byte[file.Length];
+                file.Read(buffer, 0, (int)file.Length);
+
+                var courses = JWService.AnalysisExcel(buffer);
 
                 var beginTime = new DateTime(2022, 2, 28);
 
@@ -146,7 +153,10 @@ namespace PostCalendarAPITests
 
             using (var file = File.OpenRead(path))
             {
-                var courses = JWService.AnalysisExcel(file);
+                byte[] buffer = new byte[file.Length];
+                file.Read(buffer, 0, (int)file.Length);
+
+                var courses = JWService.AnalysisExcel(buffer);
 
                 var beginTime = new DateTime(2022, 8, 22);
 
