@@ -14,7 +14,7 @@ namespace PostCalendarAPITools
 
             await helper.InitHelper();
 
-            foreach(var item in reader.items)
+            foreach (var item in reader.items)
             {
                 await helper.AddUser(item);
             }

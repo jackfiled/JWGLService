@@ -13,16 +13,17 @@ namespace PostCalendarAPI.Controllers
         private readonly ILogger _logger;
         private readonly ICSInfoContext _context;
         private readonly IJWService _jWService;
-        
+        private readonly TimeSpan loginOutTime;
         public CalendarController(
             ILogger<CalendarController> logger,
             ICSInfoContext context,
-            IJWService jWService
-            )
+            IJWService jWService,
+            IConfiguration configuration)
         {
             _logger = logger;
             _context = context;
             _jWService = jWService;
+            loginOutTime = TimeSpan.Parse(configuration["LoginOutTime"]);
         }
 
         [HttpPost]
@@ -31,21 +32,20 @@ namespace PostCalendarAPI.Controllers
             var ics = _context.ICSInfos.SingleOrDefault(i => i.UserName == model.username);
 
             // 先判断该用户是否已经请求过
-            // 如果在六小时内请求过则拒绝请求
-            // 在测试时先取消这个限制
-            // 生产环境取消注释
-            /*if (ics != default)
+            // 通过"LoginOutTime"设置超时时间
+            // 设置00:00:00为没有超时时间
+            if (ics != default)
             {
                 DateTime createDateTime = DateTime.Parse(ics.CreatedDateTimeString);
                 TimeSpan span = DateTime.Now - createDateTime;
 
-                if (span <= new TimeSpan(24, 0, 0))
+                if (span <= loginOutTime)
                 {
                     _logger.LogInformation("User {username} reject", model.username);
-                    TimeSpan result = new TimeSpan(24, 0, 0) - span;
+                    TimeSpan result = loginOutTime - span;
                     return BadRequest($"请求过于频繁, 请在{result}后再试");
                 }
-            }*/
+            }
 
             if (await _jWService.Login(model.username, model.password))
             {
@@ -112,7 +112,6 @@ namespace PostCalendarAPI.Controllers
             var infos = _context.ICSInfos
                 .Where(i => i.UserName == username)
                 .ToList();
-
             return Ok(infos);
         }
 

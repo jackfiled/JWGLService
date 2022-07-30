@@ -18,8 +18,8 @@ namespace PostCalendarAPI.Models
             Teacher = course.Teacher;
             Place = course.Place;
             Weeks = course.Weeks;
-            BeginTimeString = course.BeginTime.ToString();
-            EndTimeString = course.EndTime.ToString();
+            BeginTimeString = course.BeginTime.ToString("HH:mm");
+            EndTimeString = course.EndTime.ToString("HH:mm");
             DayOfWeek = course.DayOfWeek;
         }
     }
