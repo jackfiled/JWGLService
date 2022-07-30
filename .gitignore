@@ -7,3 +7,6 @@ obj/
 
 # The Database Files
 *.db*
+
+# The log Files
+*.log
