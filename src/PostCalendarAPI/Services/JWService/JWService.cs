@@ -60,6 +60,8 @@ namespace PostCalendarAPI.Services.JWService
         public async Task GetSemester(string semester)
         {
             targetSemester = semester;
+            GetSemesterBeginTime();
+
             var downloadModel = new DownloadModel(semester);
 
             var request = new HttpRequestMessage()

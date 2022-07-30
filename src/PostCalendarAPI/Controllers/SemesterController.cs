@@ -33,7 +33,7 @@ namespace PostCalendarAPI.Controllers
 
             if (semester == default)
             {
-                return NotFound();
+                return NotFound("学期课表未公布");
             }
             else
             {
@@ -55,7 +55,7 @@ namespace PostCalendarAPI.Controllers
 
             if(result == null)
             {
-                return BadRequest();
+                return BadRequest("学期课表未公布");
             }
             else
             {
