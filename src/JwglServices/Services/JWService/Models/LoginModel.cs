@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Buffers.Text;
 
-namespace PostCalendarAPI.Services.JWService.Models
+namespace JwglServices.Services.JWService.Models
 {
     public class LoginModel
     {

@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PostCalendarAPI.Services.JWService.Models
+namespace JwglServices.Services.JWService.Models
 {
     /// <summary>
     ///  表示学期中的每一个课的模型

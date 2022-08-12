@@ -3,10 +3,10 @@ using System.Text.RegularExpressions;
 using System.Net;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
-using PostCalendarAPI.Models;
-using PostCalendarAPI.Services.JWService.Models;
+using JwglServices.Models;
+using JwglServices.Services.JWService.Models;
 
-namespace PostCalendarAPI.Services.JWService
+namespace JwglServices.Services.JWService
 {
     public class JWService : IDisposable, IJWService
     {
@@ -133,9 +133,9 @@ namespace PostCalendarAPI.Services.JWService
         /// </summary>
         /// <param name="excelStream">excel文件流</param>
         /// <returns>包含的课程列表</returns>
-        public static IEnumerable<Course> AnalysisExcel(byte[] bytes)
+        public static IEnumerable<Models.Course> AnalysisExcel(byte[] bytes)
         {
-            var courses = new List<Course>();
+            var courses = new List<Models.Course>();
             
             using(MemoryStream stream = new MemoryStream(bytes))
             {
@@ -163,7 +163,7 @@ namespace PostCalendarAPI.Services.JWService
                                 if (content.Length != 1)
                                 {
                                     // column在这里可以表示星期几
-                                    IEnumerable<Course> result = AnalyseSingleCell(content, column);
+                                    IEnumerable<Models.Course> result = AnalyseSingleCell(content, column);
                                     courses.AddRange(result);
 
                                     // 一次课程按节数占据多个单元格
@@ -185,7 +185,7 @@ namespace PostCalendarAPI.Services.JWService
         /// <param name="courses">课程列表</param>
         /// <param name="semesterBeginTime">学期开始时间</param>
         /// <returns>ICS文件字节数组</returns>
-        public static byte[] GenerateICSStream(IEnumerable<Course> courses, DateTime semesterBeginTime)
+        public static byte[] GenerateICSStream(IEnumerable<Models.Course> courses, DateTime semesterBeginTime)
         {
             StringBuilder builder = new StringBuilder();
             string timePattern = "yyyyMMddTHHmmss";
@@ -295,22 +295,22 @@ namespace PostCalendarAPI.Services.JWService
         /// <param name="dayOfWeek">单元格所在的星期几</param>
         /// <returns>课程列表</returns>
         /// <exception cref="JWAnalysisException">解析失败引发的异常</exception>
-        private static IEnumerable<Course> AnalyseSingleCell(string cellString, int dayOfWeek)
+        private static IEnumerable<Models.Course> AnalyseSingleCell(string cellString, int dayOfWeek)
         {
             // 这里注意
             // lines的第一行是一个空字符串
             // 5行文字有6行
             var lines = cellString.Split("\n");
-            var courses = new List<Course>();
+            var courses = new List<Models.Course>();
 
             switch(lines.Length)
             {
                 case 6:
                     // 只有一门课程的单元格
                     // 没有分组
-                    int[] weeks = Course.AnalyseWeekString(lines[3]);
-                    int[] classes = Course.AnalyseTimeString(lines[5]);
-                    var course = new Course(
+                    int[] weeks = Models.Course.AnalyseWeekString(lines[3]);
+                    int[] classes = Models.Course.AnalyseTimeString(lines[5]);
+                    var course = new Models.Course(
                         lines[1],
                         lines[2],
                         lines[4],
@@ -325,9 +325,9 @@ namespace PostCalendarAPI.Services.JWService
                 case 7:
                     // 只有一门课程的单元格
                     // 含有分组
-                    weeks = Course.AnalyseWeekString(lines[4]);
-                    classes = Course.AnalyseTimeString(lines[6]);
-                    course = new Course(
+                    weeks = Models.Course.AnalyseWeekString(lines[4]);
+                    classes = Models.Course.AnalyseTimeString(lines[6]);
+                    course = new Models.Course(
                         lines[1],
                         lines[3] + lines[2],// 老师和分组合并显示
                         lines[5],
@@ -342,9 +342,9 @@ namespace PostCalendarAPI.Services.JWService
                 case 11:
                     // 含有两门课程的单元格
                     // 均没有分组
-                    weeks = Course.AnalyseWeekString(lines[3]);
-                    classes = Course.AnalyseTimeString(lines[5]);
-                    course = new Course(
+                    weeks = Models.Course.AnalyseWeekString(lines[3]);
+                    classes = Models.Course.AnalyseTimeString(lines[5]);
+                    course = new Models.Course(
                         lines[1],
                         lines[2],
                         lines[4],
@@ -355,9 +355,9 @@ namespace PostCalendarAPI.Services.JWService
                         );
                     courses.Add(course);
 
-                    weeks = Course.AnalyseWeekString(lines[8]);
-                    classes = Course.AnalyseTimeString(lines[10]);
-                    course = new Course(
+                    weeks = Models.Course.AnalyseWeekString(lines[8]);
+                    classes = Models.Course.AnalyseTimeString(lines[10]);
+                    course = new Models.Course(
                         lines[6],
                         lines[7],
                         lines[9],
@@ -376,9 +376,9 @@ namespace PostCalendarAPI.Services.JWService
                     if (lines[4].Contains('节'))
                     {
                         // 第一门没有分组
-                        weeks = Course.AnalyseWeekString(lines[3]);
-                        classes = Course.AnalyseTimeString(lines[5]);
-                        course = new Course(
+                        weeks = Models.Course.AnalyseWeekString(lines[3]);
+                        classes = Models.Course.AnalyseTimeString(lines[5]);
+                        course = new Models.Course(
                             lines[1],
                             lines[2],
                             lines[4],
@@ -390,9 +390,9 @@ namespace PostCalendarAPI.Services.JWService
                         courses.Add(course);
 
                         // 第二门有分组
-                        weeks = Course.AnalyseWeekString(lines[8]);
-                        classes = Course.AnalyseTimeString(lines[10]);
-                        course = new Course(
+                        weeks = Models.Course.AnalyseWeekString(lines[8]);
+                        classes = Models.Course.AnalyseTimeString(lines[10]);
+                        course = new Models.Course(
                             lines[5],
                             lines[7] + lines[6],// 老师和分组合并显示
                             lines[9],
@@ -408,9 +408,9 @@ namespace PostCalendarAPI.Services.JWService
                     else
                     {
                         // 第一门有分组
-                        weeks = Course.AnalyseWeekString(lines[4]);
-                        classes = Course.AnalyseTimeString(lines[6]);
-                        course = new Course(
+                        weeks = Models.Course.AnalyseWeekString(lines[4]);
+                        classes = Models.Course.AnalyseTimeString(lines[6]);
+                        course = new Models.Course(
                             lines[1],
                             lines[3] + lines[2],// 老师和分组合并显示
                             lines[5],
@@ -422,9 +422,9 @@ namespace PostCalendarAPI.Services.JWService
                         courses.Add(course);
 
                         // 第二门没有分组
-                        weeks = Course.AnalyseWeekString(lines[9]);
-                        classes = Course.AnalyseTimeString(lines[11]);
-                        course = new Course(
+                        weeks = Models.Course.AnalyseWeekString(lines[9]);
+                        classes = Models.Course.AnalyseTimeString(lines[11]);
+                        course = new Models.Course(
                             lines[7],
                             lines[8],
                             lines[10],
@@ -440,9 +440,9 @@ namespace PostCalendarAPI.Services.JWService
                 case 13:
                     // 含有两门课程的单元格
                     // 均有分组
-                    weeks = Course.AnalyseWeekString(lines[4]);
-                    classes = Course.AnalyseTimeString(lines[6]);
-                    course = new Course(
+                    weeks = Models.Course.AnalyseWeekString(lines[4]);
+                    classes = Models.Course.AnalyseTimeString(lines[6]);
+                    course = new Models.Course(
                         lines[1],
                         lines[3] + lines[2],// 老师和分组合并显示
                         lines[5],
@@ -453,9 +453,9 @@ namespace PostCalendarAPI.Services.JWService
                         );
                     courses.Add(course);
 
-                    weeks = Course.AnalyseWeekString(lines[10]);
-                    classes = Course.AnalyseTimeString(lines[12]);
-                    course = new Course(
+                    weeks = Models.Course.AnalyseWeekString(lines[10]);
+                    classes = Models.Course.AnalyseTimeString(lines[12]);
+                    course = new Models.Course(
                         lines[7],
                         lines[9] + lines[8],// 老师和分组合并显示
                         lines[11],

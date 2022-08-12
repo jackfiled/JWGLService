@@ -1,4 +1,4 @@
-﻿namespace PostCalendarAPI.Services.JWService.Models
+﻿namespace JwglServices.Services.JWService.Models
 {
     public class DownloadModel
     {

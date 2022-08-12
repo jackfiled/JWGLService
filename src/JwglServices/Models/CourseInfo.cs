@@ -1,6 +1,4 @@
-﻿using PostCalendarAPI.Services.JWService.Models;
-
-namespace PostCalendarAPI.Models
+﻿namespace JwglServices.Models
 {
     public class CourseInfo
     {
@@ -12,7 +10,7 @@ namespace PostCalendarAPI.Models
         public string EndTimeString { get; set; }
         public int DayOfWeek { get; set; }
 
-        public CourseInfo(Course course)
+        public CourseInfo(Services.JWService.Models.Course course)
         {
             Name = course.Name;
             Teacher = course.Teacher;

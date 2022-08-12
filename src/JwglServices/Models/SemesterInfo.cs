@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace PostCalendarAPI.Models
+namespace JwglServices.Models
 {
     public class SemesterInfo
     {
@@ -15,26 +15,7 @@ namespace PostCalendarAPI.Models
         /// <summary>
         /// 学期开始的时间
         /// </summary>
-        public string? BeginDateTimeString { get; set; }        
-    }
-
-    internal class Semester : IComparable<Semester>
-    {
-        public string SemesterString { get; set; }
-
-        public DateTime BeginDateTime { get; set; }
-
-        public Semester(SemesterInfo info)
-        {
-            SemesterString = info.Semester!;
-            BeginDateTime = DateTime.Parse(info.BeginDateTimeString!);
-        }
-
-        public int CompareTo(Semester? other)
-        {
-            return BeginDateTime.CompareTo(other?.BeginDateTime);
-        }
-
+        public string? BeginDateTimeString { get; set; }
     }
 
     public class SemesterInfoContext : DbContext

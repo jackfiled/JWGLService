@@ -1,5 +1,5 @@
-﻿using PostCalendarAPI.Services.JWService.Models;
-using PostCalendarAPI.Services.JWService;
+﻿using JwglServices.Services.JWService.Models;
+using JwglServices.Services.JWService;
 
 namespace PostCalendarAPITests
 {

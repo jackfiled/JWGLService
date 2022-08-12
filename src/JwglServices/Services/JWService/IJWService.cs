@@ -1,6 +1,6 @@
-﻿using PostCalendarAPI.Models;
+﻿using JwglServices.Models;
 
-namespace PostCalendarAPI.Services.JWService
+namespace JwglServices.Services.JWService
 {
     /// <summary>
     /// 教务系统服务提供的接口
