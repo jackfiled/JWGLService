@@ -1,4 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using JwglServices.Models;
 using JwglServices.Services;
+using JwglServices.Services.JWService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +10,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddGrpc();
+
+// Add the Entity Framework Service
+builder.Services.AddDbContext<SemesterInfoContext>(options =>
+{
+    var databaseName = builder.Configuration["sqlite:semester"];
+    var databasePath = Path.Join(Directory.GetCurrentDirectory(), databaseName);
+
+    options.UseSqlite($"Data Source={databasePath}");
+});
+
+// Add the jwgl Service
+builder.Services.AddScoped<IJWService, JWService>();
 
 var app = builder.Build();
 
