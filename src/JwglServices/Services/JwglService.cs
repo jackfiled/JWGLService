@@ -26,27 +26,34 @@ namespace JwglServices.Services
                 throw new RpcException(new Status(StatusCode.NotFound, "The studentID or password is wrong"));
             }
 
-            await _jwService.GetSemester(semester);
-
-            var courses = _jwService.GetCourses();
-            var icsStream = await _jwService.GetICSStream();
-
-            if (courses == null || icsStream == null)
+            try
             {
-                throw new RpcException(new Status(StatusCode.Internal, "The courses is invalid"));
-            }
-            else
-            {
-                var response = new GetSemesterResponse();
-                
-                foreach(var course in courses)
+                await _jwService.GetSemester(semester);
+
+                var courses = _jwService.GetCourses();
+                var icsStream = await _jwService.GetICSStream();
+
+                if (courses == null || icsStream == null)
                 {
-                    response.Courses.Add(ConvertInternalCourse2RpcCourse(course));
+                    throw new RpcException(new Status(StatusCode.Internal, "The courses is invalid"));
                 }
+                else
+                {
+                    var response = new GetSemesterResponse();
 
-                response.IcsStream = Google.Protobuf.ByteString.CopyFrom(icsStream);
-                
-                return response;
+                    foreach (var course in courses)
+                    {
+                        response.Courses.Add(ConvertInternalCourse2RpcCourse(course));
+                    }
+
+                    response.IcsStream = Google.Protobuf.ByteString.CopyFrom(icsStream);
+
+                    return response;
+                }
+            }
+            catch (JWService.Models.JWAnalysisException e)
+            {
+                throw new RpcException(new Status(StatusCode.Internal, e.Message));
             }
         }
 

@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>\\wsl.localhost\Ubuntu\home\ricardo\document\website\JwglService</_PublishTargetUrl>
-    <History>True|2022-08-12T07:11:25.5665978Z;</History>
+    <History>True|2022-08-12T08:03:07.4419658Z;True|2022-08-12T15:11:25.5665978+08:00;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>
