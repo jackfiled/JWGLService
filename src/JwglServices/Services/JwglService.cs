@@ -15,7 +15,7 @@ namespace JwglServices.Services
 
         public override async Task<GetSemesterResponse> GetSemester(GetSemesterRequest request, ServerCallContext context)
         {
-            string username = request.StudengID;
+            string username = request.StudentID;
             string password = request.Password;
             string semester = request.Semester;
 

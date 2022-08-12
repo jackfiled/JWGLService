@@ -10,7 +10,7 @@ service Jwgler {
 
 // 请求学期课表的信息
 message GetSemesterRequest {
-	string studengID = 1;
+	string studentID = 1;
 	string password = 2;
 	string semester = 3;
 }
