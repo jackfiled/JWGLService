@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{915D57DF-B998-4124-8775-87DC6E1056F5}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCalendarAPITools", "src\PostCalendarAPITools\PostCalendarAPITools.csproj", "{576CF3C2-2693-44A2-8AD7-DC8B51E96FDE}"

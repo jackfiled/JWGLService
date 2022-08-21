@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PostCalendarAPI\PostCalendarAPI.csproj" />
+    <ProjectReference Include="..\JwglServices\JwglServices.csproj" />
   </ItemGroup>
 
 </Project>

@@ -10,3 +10,10 @@ obj/
 
 # The log Files
 *.log
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
