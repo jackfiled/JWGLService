@@ -12,8 +12,7 @@
     "JwglBackend": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "weatherforecast",
+      "launchBrowser": false,
       "applicationUrl": "http://localhost:5205",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
