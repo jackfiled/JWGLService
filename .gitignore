@@ -1,6 +1,9 @@
 # Visual Stduio Configuration Files
 .vs/
 
+# Rider Configuration Files
+.idea/
+
 # The Binrary Files
 bin/
 obj/

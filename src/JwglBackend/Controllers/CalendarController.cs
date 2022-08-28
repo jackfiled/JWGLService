@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 using JwglServices.Services.JWService;
 using JwglBackend.Models;
-using NPOI.OpenXmlFormats.Dml;
 
 namespace JwglBackend.Controllers
 {
@@ -13,11 +11,14 @@ namespace JwglBackend.Controllers
     {
         private readonly IJWService _jwService;
         private readonly IcsInformationDbContext _icsInformations;
+        private readonly IConfiguration _configuration;
 
-        public CalendarController(IJWService jwService, IcsInformationDbContext icsInformations)
+        public CalendarController(
+            IJWService jwService, IcsInformationDbContext icsInformations, IConfiguration configuration)
         {
             _jwService = jwService;
             _icsInformations = icsInformations;
+            _configuration = configuration;
         }
 
         [HttpPost("get-semester")]
@@ -32,8 +33,14 @@ namespace JwglBackend.Controllers
 
                 // 判断距离上次更新的时间
                 TimeSpan span = DateTime.Now - information.UpdatedAt;
-                // TODO
-                
+                TimeSpan timeout = new TimeSpan(int.Parse(_configuration["timeout"]), 0, 0);
+
+                if (span <= timeout)
+                {
+                    // 说明仍在超时时间之内
+                    DateTime targetTime = DateTime.Now + (timeout - span);
+                    return BadRequest(new ErrorModel($"请求过于频繁，请在{targetTime}之后再试"));
+                }
             }
 
             bool result = await _jwService.Login(model.StudentID, model.Password);
@@ -77,7 +84,7 @@ namespace JwglBackend.Controllers
         }
 
         [HttpGet("{id}/{semester}.ics")]
-        public ActionResult GetICSFile(string id, string semester)
+        public ActionResult GetIcsFile(string id, string semester)
         {
             Console.WriteLine(id + semester);
             IcsInformation? information = _icsInformations.Informations.FirstOrDefault(
